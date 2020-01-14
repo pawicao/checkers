@@ -9,7 +9,7 @@ makeMove({X1,Y1},{X2,Y2},BoardState) ->
   setSquareValue(getSquareValue({X1,Y1}, BoardState), {X2,Y2}, BoardStateTmp).
 
 getAvailableSquares(Piece,{X,Y}, BoardState, CaptureMoves) ->
-    CaptureMoves = getCaptureMoveSquares(),
+    CaptureMoves = getCaptureMoveSquares(Piece,{X,Y}, BoardState),
     getNormalMoveSquares(Piece,{X,Y}, BoardState, CaptureMoves) ++ CaptureMoves.
 
 getNormalMoveSquares(Piece,{X,Y}, BoardState, []) ->
