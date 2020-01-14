@@ -1,7 +1,7 @@
 
 -module(checkers).
--import(board,[showBoard/1,startingBoard/0]).
--import(moves,[makeMove/3]).
+-import(board,[showBoard/1,startingBoard/0,getSquareValue/2]).
+-import(moves,[makeMove/3,getAvailableSquares/4]).
 %% API
 -export([main/0, player/0]).
 
@@ -25,11 +25,22 @@ inputToColNo(X) ->
   end.
 
 % row number must be inverted
-inputToRowNo(Y) when Y<8 -> 9-Y;
-inputToRowNo(Y) -> -1.
+inputToRowNo(Y) when Y<9, Y>0 -> 9-Y;
+inputToRowNo(_) -> -1.
 
 areValidSquares([X1,Y1,X2,Y2]) when (X1 == -1) or (Y1 == -1) or (X2 == -1) or (Y2 == -1) -> {false, [X1,Y1,X2,Y2]};
 areValidSquares([X1,Y1,X2,Y2]) -> {true, [X1,Y1,X2,Y2]}.
+
+checkIfMoveIsLegal([X1,Y1,X2,Y2], BoardState) ->
+	CaptureMoves = [], 
+	Z = getAvailableSquares(getSquareValue({X1,Y1},BoardState),{X1,Y1},BoardState, CaptureMoves),
+	case lists:member({X2,Y2},Z) of
+		false ->
+			io:format("Ilegal move! ~n"),
+			areValidSquares(getPlayerMoveIfSquaresAreValid(BoardState));
+		true ->
+			[X1,Y1,X2,Y2]
+	end.
 
 readUserChoice() ->
   case io:fread("Your choice: ","~d") of
@@ -38,19 +49,21 @@ readUserChoice() ->
   end.
 
 readPlayerMove() ->
-  case io:fread("Entry your move [format [A-H][1-8][A-H][1-8]] : ","~c~d~c~d") of
-    {ok,Move} -> Move;
+  case io:fread("Enter your move [format [A-H][1-8][A-H][1-8]] : ","~c~d~c~d") of
+    {ok,Move} -> 
+	  Move;
     {error,_} ->
       io:format("Move format must be [A-H][1-8][A-H][1-8]]"),
       readPlayerMove()
   end.
 
-getPlayerMoveIfSquaresAreValid() ->
+getPlayerMoveIfSquaresAreValid(BoardState) ->
   case areValidSquares(getPlayerMove()) of
     {false, _ } ->
       io:format("No square with coordinates matching entered data ~n"),
-      areValidSquares(getPlayerMoveIfSquaresAreValid());
-    {true, Move} -> Move
+      areValidSquares(getPlayerMoveIfSquaresAreValid(BoardState));
+    {true, Move} -> 
+	  checkIfMoveIsLegal(Move, BoardState)
   end.
 
 getPlayerMove() ->
@@ -62,10 +75,10 @@ player() ->
     {PIDMain,PIDOpponent,Color,BoardState} ->
       showBoard(BoardState),
       io:format("~s to move ~n",[Color]),
-      [X1, Y1, X2, Y2] = getPlayerMoveIfSquaresAreValid(),
+      [X1, Y1, X2, Y2] = getPlayerMoveIfSquaresAreValid(BoardState),
       NewBoardState = makeMove({X1,Y1},{X2,Y2},BoardState),
-      PIDOpponent!{PIDMain,self(),getOppontentColor(Color),NewBoardState}
-      %PIDMain!{end_of_game}
+      PIDOpponent!{PIDOpponent,PIDMain,getOppontentColor(Color),NewBoardState}
+      %PIDMain!{end_of_game,getOppontentColor(Color)}
   end.
 
 main() ->
@@ -76,11 +89,12 @@ main() ->
   C = readUserChoice(),
   case C of
     1 ->
+	  %io:format("\e[H\e[J"),
       PIDPlayer1 = spawn(?MODULE,player,[]),
       PIDPlayer2 = spawn(?MODULE,player,[]),
       PIDPlayer1!{self(),PIDPlayer2,white,startingBoard()},
       receive
-        {end_of_game} -> io:format("Thanks for playing.")
+        {end_of_game, Color} -> io:format("Thanks for playing. ~s won!", [Color])
       end;
     2 ->
       io:format("In version 2.0");
