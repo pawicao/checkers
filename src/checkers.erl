@@ -30,9 +30,13 @@ inputToRowNo(_) -> -1.
 
 areValidSquares([X1,Y1,X2,Y2]) when (X1 == -1) or (Y1 == -1) or (X2 == -1) or (Y2 == -1) -> {false, [X1,Y1,X2,Y2]};
 areValidSquares([X1,Y1,X2,Y2]) -> {true, [X1,Y1,X2,Y2]}.
-areValidPieces([X1,Y1,_,_], Color, BoardState) ->
+areValidPieces([X1,Y1,X2,Y2], Color, BoardState) ->
 	case getSquareValue({X1,Y1},BoardState) of
-		{Color,_} -> true;
+		{Color,_} ->
+			case getSquareValue({X2,Y2},BoardState) of
+				empty -> true;
+				_     -> false			
+			end;
 		_ 		  -> false
 	end.
 
@@ -87,11 +91,13 @@ getPlayerMove() ->
 player() ->
   receive
     {PIDMain,PIDOpponent,Color,BoardState} ->
+      PIDNewMe = spawn(?MODULE,player,[]),
       showBoard(BoardState),
       io:format("~s to move ~n",[Color]),
       [X1, Y1, X2, Y2] = getPlayerMoveIfSquaresAreValid(BoardState,Color),
       NewBoardState = makeMove({X1,Y1},{X2,Y2},BoardState),
-      PIDOpponent!{PIDOpponent,PIDMain,getOppontentColor(Color),NewBoardState}
+      PIDOpponent!{PIDMain,PIDNewMe,getOppontentColor(Color),NewBoardState},
+      erlang:display("DEBUG")
       %PIDMain!{end_of_game,getOppontentColor(Color)}
   end.
 
