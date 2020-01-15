@@ -30,21 +30,14 @@ inputToRowNo(_) -> -1.
 
 areValidSquares([X1,Y1,X2,Y2]) when (X1 == -1) or (Y1 == -1) or (X2 == -1) or (Y2 == -1) -> {false, [X1,Y1,X2,Y2]};
 areValidSquares([X1,Y1,X2,Y2]) -> {true, [X1,Y1,X2,Y2]}.
-areValidPieces([X1,Y1,_,_], Color, BoardState) ->
-	case getSquareValue({X1,Y1},BoardState) of
-		{Color,_} -> true;
-		_ 		  -> false
-	end.
 
-
-	
-checkIfMoveIsLegal([X1,Y1,X2,Y2], BoardState, Color) ->
+checkIfMoveIsLegal([X1,Y1,X2,Y2], BoardState) ->
 	CaptureMoves = [], 
 	Z = getAvailableSquares(getSquareValue({X1,Y1},BoardState),{X1,Y1},BoardState, CaptureMoves),
 	case lists:member({X2,Y2},Z) of
 		false ->
 			io:format("Ilegal move! ~n"),
-			getPlayerMoveIfSquaresAreValid(BoardState,Color);
+			areValidSquares(getPlayerMoveIfSquaresAreValid(BoardState));
 		true ->
 			[X1,Y1,X2,Y2]
 	end.
@@ -64,20 +57,14 @@ readPlayerMove() ->
       readPlayerMove()
   end.
 
-getPlayerMoveIfSquaresAreValid(BoardState,Color) ->
-  PM = getPlayerMove(),
-  case areValidSquares(PM) of
+getPlayerMoveIfSquaresAreValid(BoardState) ->
+  erlang:display("DEBUG"),
+  case areValidSquares(getPlayerMove()) of
     {false, _ } ->
       io:format("No square with coordinates matching entered data ~n"),
-      areValidSquares(getPlayerMoveIfSquaresAreValid(BoardState,Color));
+      areValidSquares(getPlayerMoveIfSquaresAreValid(BoardState));
     {true, Move} -> 
-	  case areValidPieces(Move, Color, BoardState) of
-		false ->
-			io:format("Wrong piece chosen! ~n"),
-			getPlayerMoveIfSquaresAreValid(BoardState,Color);
-		true ->
-			checkIfMoveIsLegal(Move, BoardState, Color)
-	  end
+	  checkIfMoveIsLegal(Move, BoardState)
   end.
 
 getPlayerMove() ->
@@ -86,15 +73,19 @@ getPlayerMove() ->
 
 player() ->
   receive
-    {PIDMain,PIDOpponent,Color,BoardState} ->
+    {PIDMe,PIDOpponent,Color,BoardState, PIDMain} ->
       showBoard(BoardState),
       io:format("~s to move ~n",[Color]),
-      [X1, Y1, X2, Y2] = getPlayerMoveIfSquaresAreValid(BoardState,Color),
-      NewBoardState = makeMove({X1,Y1},{X2,Y2},BoardState),
-      PIDOpponent!{PIDOpponent,PIDMain,getOppontentColor(Color),NewBoardState}
+      [X1, Y1, X2, Y2] = getPlayerMoveIfSquaresAreValid(BoardState),
+      NewBoardState = makeMove({X1,Y1},{X2,Y2},BoardState)
+      %PIDOpponent!{PIDOpponent,PIDMe,getOppontentColor(Color),NewBoardState, PIDMain}
       %PIDMain!{end_of_game,getOppontentColor(Color)}
   end.
 
+playGame(PIDMe,PIDOpponent,MyColor,Board, PIDMain) ->
+	PIDMe!{PIDMe, PIDOpponent,MyColor,Board,PIDMain},
+	playGame(PIDOpponent, PIDMe, getOppontentColor(MyColor), Board, PIDMain).
+  
 main() ->
   io:format("------------------Checkers - Erlang-----------------~n"),
   io:format("1. Player vs Player~n"),
@@ -106,9 +97,11 @@ main() ->
 	  %io:format("\e[H\e[J"),
       PIDPlayer1 = spawn(?MODULE,player,[]),
       PIDPlayer2 = spawn(?MODULE,player,[]),
-      PIDPlayer1!{self(),PIDPlayer2,white,startingBoard()},
+	  Z = startingBoard(),
+	  playGame(PIDPlayer1,PIDPlayer2,white,Z, self()),
+      %PIDPlayer1!{PIDPlayer1,PIDPlayer2,white,startingBoard(), self()},
       receive
-        {end_of_game, Color} -> io:format("Thanks for playing. ~s won!", [Color])
+        {end_of_game, Color} -> io:format("Thanks for playing, ~s won!", [Color])
       end;
     2 ->
       io:format("In version 2.0");
