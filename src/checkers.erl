@@ -117,7 +117,7 @@ main() ->
 	  %io:format("\e[H\e[J"),
       PIDPlayer1 = spawn(?MODULE,player,[]),
       PIDPlayer2 = spawn(?MODULE,player,[]),
-      PIDPlayer1!{self(),PIDPlayer2,white,testBoard(),{{white,12},{black,12}}},
+      PIDPlayer1!{self(),PIDPlayer2,white,testBoardEnd(),{{white,1},{black,1}}},
       receive
         {end_of_game, Color} -> io:format("Thanks for playing. ~s won!", [Color]),erlang:halt()
       end;

@@ -40,7 +40,7 @@ captureMultiplePieces(Piece,[X1,Y1,X2,Y2], BoardState) ->
 	MCMLast = [A || {_,A} <- MultipleCapturesMoves],
 	case lists:member({X2,Y2},MCMLast) of
 		true -> capturePieces([X1,Y1],lists:nth(1,MultipleCapturesMoves), BoardState);
-		false	-> error
+		false	-> BoardState
 	end.
 
 capturePieces(_,{}, BoardState) -> BoardState;
@@ -75,14 +75,16 @@ getNormalMoveSquares(Piece,{X,Y},[]) ->
 			   true				-> R
 			end
       end;
-    {_,queen} -> getQueenNormalMoveSquares({X,Y},{1, 1},[]) ++ getQueenNormalMoveSquares({X,Y},{1, -1},[]) ++ getQueenNormalMoveSquares({X,Y},{-1, 1},[]) ++
+    {_,queen} -> io:format("test"),
+			getQueenNormalMoveSquares({X,Y},{1, 1},[]) ++ getQueenNormalMoveSquares({X,Y},{1, -1},[]) ++ getQueenNormalMoveSquares({X,Y},{-1, 1},[]) ++
       getQueenNormalMoveSquares({X,Y},{-1, -1},[])
   end;
 getNormalMoveSquares(_, _, _) -> [].
 
-getQueenNormalMoveSquares({X,Y},{DirectionX, DirectionY},SquaresList) when (X+DirectionX >= 1) and (Y+DirectionY >= 1) and
-  (X+DirectionX =< 8) and (Y+DirectionY =< 8) ->
-  getQueenNormalMoveSquares({X,Y},{DirectionX, DirectionY},SquaresList ++ [{X+DirectionX,Y+DirectionY}]);
+getQueenNormalMoveSquares({X,Y},{DirectionX, DirectionY},SquaresList) when (X+DirectionX >= 0) and (Y+DirectionY >= 0) and
+  (X+DirectionX =< 9) and (Y+DirectionY =< 9) ->
+	io:format("~w~n",[[DirectionX, DirectionY, X,Y]]),
+  getQueenNormalMoveSquares({X+DirectionX,Y+DirectionY},{DirectionX, DirectionY},SquaresList ++ [{X+DirectionX,Y+DirectionY}]);
 getQueenNormalMoveSquares(_,_,SquaresList) -> SquaresList.
 
 getMultipleCapturesMoveSquares(_, [], _) -> [];
@@ -150,8 +152,39 @@ getCaptureMoveSquares(Piece,{X,Y}, BoardState) ->
 			   true				-> R
 			end
       end;
-    {_,queen} -> []
-	% to_do
+    {_,queen} ->
+			case Piece of
+				{white,_} ->
+					if X+2 < 9, Y-2 > 0 ->
+						case {getSquareValue({X+1,Y-1},BoardState),getSquareValue({X+2,Y-2},BoardState)} of
+							{{black,_},empty} -> R = [{X+2,Y-2}];
+							_ -> R = []
+						end;
+						true 			-> R = []
+					end,
+					if X-2 > 0, Y-2 > 0 ->
+						case {getSquareValue({X-1,Y-1},BoardState),getSquareValue({X-2,Y-2},BoardState)} of
+							{{black,_},empty} -> R ++ [{X-2,Y-2}];
+							_ -> R
+						end;
+						true				-> R
+					end;
+				{black,_} ->
+					if X+2 < 9, Y+2 > 0 ->
+						case {getSquareValue({X+1,Y+1},BoardState),getSquareValue({X+2,Y+2},BoardState)} of
+							{{white,_},empty} -> R = [{X+2,Y+2}];
+							_ -> R = []
+						end;
+						true 			-> R = []
+					end,
+					if X-2 > 0, Y+2 > 0 ->
+						case {getSquareValue({X-1,Y+1},BoardState),getSquareValue({X-2,Y+2},BoardState)} of
+							{{white,_},empty} -> R ++ [{X-2,Y+2}];
+							_ -> R
+						end;
+						true				-> R
+					end
+			end
   end.
 
 canPromoteToQueen({black,pawn},{_,Y}) when Y==8 -> true;

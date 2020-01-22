@@ -50,17 +50,17 @@ startingBoard() -> [[empty,{black,pawn},empty,{black,pawn},empty,{black,pawn},em
 
 testBoard() -> [[empty,{black,pawn},empty,{black,pawn},empty,{black,pawn},empty,{black,pawn}],
   [{black,pawn},empty,empty,empty,{black,pawn},empty,{black,pawn},empty],
-  [empty,{black,pawn},empty,{black,pawn},empty,{black,pawn},empty,{black,pawn}],
+  [empty,{black,pawn},empty,empty,empty,{black,pawn},empty,{black,pawn}],
   [empty,empty,empty,empty,empty,empty,empty,empty],
   [empty,{black,pawn},empty,empty,empty,empty,empty,empty],
   [{white,pawn},empty,{white,pawn},empty,{white,pawn},empty,{white,pawn},empty],
   [empty,{white,pawn},empty,{white,pawn},empty,{white,pawn},empty,{white,pawn}],
   [{white,pawn},empty,{white,pawn},empty,{white,pawn},empty,{white,pawn},empty]].
 
-testBoardEnd() -> [[empty,empty,empty,empty,empty,empty,empty,empty],
+testBoardEnd() -> [[empty,empty,empty,{black,pawn},empty,empty,empty,empty],
   [{white,pawn},empty,empty,empty,empty,empty,empty,empty],
   [empty,empty,empty,empty,empty,empty,empty,empty],
-  [empty,empty,empty,empty,empty,empty,{black,pawn},empty],
+  [empty,empty,empty,empty,empty,empty,empty,empty],
   [empty,empty,empty,empty,empty,empty,empty,empty],
   [empty,empty,empty,empty,empty,empty,empty,empty],
   [empty,empty,empty,empty,empty,empty,empty,empty],
