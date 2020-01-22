@@ -1,6 +1,6 @@
 
 -module(checkers).
--import(board,[showBoard/1,startingBoard/0,getSquareValue/2]).
+-import(board,[showBoard/1,startingBoard/0,getSquareValue/2,testBoard/0,testBoardEnd/0]).
 -import(moves,[makeMove/4,getAvailableSquares/3,moveOrCapture/2]).
 %% API
 -export([main/0, player/0,getOpponentColor/1]).
@@ -117,7 +117,7 @@ main() ->
 	  %io:format("\e[H\e[J"),
       PIDPlayer1 = spawn(?MODULE,player,[]),
       PIDPlayer2 = spawn(?MODULE,player,[]),
-      PIDPlayer1!{self(),PIDPlayer2,white,startingBoard(),{{white,12},{black,12}}},
+      PIDPlayer1!{self(),PIDPlayer2,white,testBoard(),{{white,12},{black,12}}},
       receive
         {end_of_game, Color} -> io:format("Thanks for playing. ~s won!", [Color]),erlang:halt()
       end;
