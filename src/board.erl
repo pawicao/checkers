@@ -2,7 +2,7 @@
 -module(board).
 
 %% API
--export([showBoard/1,startingBoard/0,getSquareValue/2,setSquareValue/3]).
+-export([showBoard/1,startingBoard/0,getSquareValue/2,setSquareValue/3, testBoard/0, testBoardEnd/0]).
 
 pieceTypeToString(P) ->
   case P of
@@ -47,6 +47,24 @@ startingBoard() -> [[empty,{black,pawn},empty,{black,pawn},empty,{black,pawn},em
   [{white,pawn},empty,{white,pawn},empty,{white,pawn},empty,{white,pawn},empty],
   [empty,{white,pawn},empty,{white,pawn},empty,{white,pawn},empty,{white,pawn}],
   [{white,pawn},empty,{white,pawn},empty,{white,pawn},empty,{white,pawn},empty]].
+
+testBoard() -> [[empty,{black,pawn},empty,{black,pawn},empty,{black,pawn},empty,{black,pawn}],
+  [{black,pawn},empty,empty,empty,{black,pawn},empty,{black,pawn},empty],
+  [empty,{black,pawn},empty,{black,pawn},empty,{black,pawn},empty,{black,pawn}],
+  [empty,empty,empty,empty,empty,empty,empty,empty],
+  [empty,{black,pawn},empty,empty,empty,empty,empty,empty],
+  [{white,pawn},empty,{white,pawn},empty,{white,pawn},empty,{white,pawn},empty],
+  [empty,{white,pawn},empty,{white,pawn},empty,{white,pawn},empty,{white,pawn}],
+  [{white,pawn},empty,{white,pawn},empty,{white,pawn},empty,{white,pawn},empty]].
+
+testBoardEnd() -> [[empty,empty,empty,empty,empty,empty,empty,empty],
+  [{white,pawn},empty,empty,empty,empty,empty,empty,empty],
+  [empty,empty,empty,empty,empty,empty,empty,empty],
+  [empty,empty,empty,empty,empty,empty,{black,pawn},empty],
+  [empty,empty,empty,empty,empty,empty,empty,empty],
+  [empty,empty,empty,empty,empty,empty,empty,empty],
+  [empty,empty,empty,empty,empty,empty,empty,empty],
+  [empty,empty,empty,empty,empty,empty,empty,empty]].
 
 getSquareValue({X,Y},Board) -> lists:nth(X,lists:nth(Y,Board)).
 
